@@ -143,7 +143,21 @@ namespace InnovationOne.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+        [HttpGet]
+        public ActionResult contador()
+        {
 
+            var categoria = _context.Categoria;
+            var countCategoria = categoria.Count();
+            var resultado = new
+            {
+
+                categoriaN = countCategoria
+            };
+            return Json(resultado);
+
+
+        }
         private bool CategoriaExists(int id)
         {
             return _context.Categoria.Any(e => e.Id == id);

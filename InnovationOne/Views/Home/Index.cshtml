@@ -1,8 +1,46 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+    <script>
+    window.setInterval('carregar()', 3000);
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+    function carregar() {
+        $.ajax({
+            url: 'produtos/contador', type: "GET", dataType: "json",
+
+            success: function (data, status, xhr) {
+                    $('#produtoN').html(data.produtoN);
+                    $('#produtoTotal').html(data.produtoTotal);
+                }
+
+        });
+        $.ajax({
+            url: 'categorias/contador', type: "GET", dataType: "json",
+
+            success: function (data, status, xhr) {
+                $('#categoriaN').html(data.categoriaN);
+            }
+
+        });
+
+    }
+
+
+    </script>
+    <div class="text-center">
+        <div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
+            <div class="card-header">Categorias</div>
+            <div class="card-body">
+                
+                <p class="card-text">Total de itens: <span id="categoriaN">0</span></p>
+            </div>
+        </div>
+        <div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
+            <div class="card-header">Produtos</div>
+            <div class="card-body">
+
+                <p class="card-text" >Total de itens: <span id="produtoN">0</span></p>
+                <p class="card-text" >Total em estoque: <span id="produtoTotal">0</span></p>
+            </div>
+        </div>
+    </div>

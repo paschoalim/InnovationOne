@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using InnovationOne.Models;
+using System.IO;
+
 
 namespace InnovationOne.Controllers
 {
@@ -151,6 +153,27 @@ namespace InnovationOne.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
+        public ActionResult contador()
+        {
+            
+            var produto = _context.Produto;
+            var produtoTotal = 0;
+            var count = produto.Count();
+            foreach (var item in produto)
+            {
+                produtoTotal = produtoTotal + item.Quantidade;
+            }
+            var resultado = new
+            {
+                produtoN = count,
+                produtoTotal = produtoTotal
+            };
+            return Json(resultado);
+
+
+        }
+       
         private bool ProdutoExists(int id)
         {
             return _context.Produto.Any(e => e.Id == id);
