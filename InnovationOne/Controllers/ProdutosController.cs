@@ -7,17 +7,21 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using InnovationOne.Models;
 using System.IO;
-
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.VisualBasic.CompilerServices;
 
 namespace InnovationOne.Controllers
 {
     public class ProdutosController : Controller
     {
         private readonly Context _context;
+        IHostingEnvironment _appEnvironment;
 
-        public ProdutosController(Context context)
+        public ProdutosController(Context context, IHostingEnvironment env)
         {
             _context = context;
+            _appEnvironment = env;
         }
 
         // GET: Produtos
@@ -177,6 +181,86 @@ namespace InnovationOne.Controllers
         private bool ProdutoExists(int id)
         {
             return _context.Produto.Any(e => e.Id == id);
+        }
+
+
+        //importar o arquivo na tabela produto
+        public async Task<string> ImportAsync(string filename)
+        {
+            string erro = "";
+            int counter = 0;
+            string line;
+            string tline = "";
+            StreamReader file = new System.IO.StreamReader(filename);
+            while ((line = file.ReadLine()) != null)
+            {
+                try
+                {
+                    String[] strlist = line.Split(';');
+                    Produto produto = new Produto();
+                    /* {
+                         Descricao = strlist[1],
+                         Quantidade = Int32.Parse(strlist[3]),
+                         CategoriaId = Int32.Parse(strlist[2])
+                     };*/
+                    produto.Descricao = strlist[1];
+                    produto.Quantidade = (int)Int32.Parse(strlist[3]);
+                    produto.CategoriaId = (int)Int32.Parse(strlist[2]);
+
+                    if (ModelState.IsValid)
+                    {
+                        _context.Add(produto);
+                        _ = await _context.SaveChangesAsync();
+                    }
+                    counter++;
+                }
+                catch 
+                {
+                    erro += $"A linha {Convert.ToString(counter)} esta com erro! \r\n";
+
+                }
+                
+            }
+            ViewData["Erro"] = erro;
+            return $"Foram importados {Convert.ToString(counter)} produtos";
+          
+            file.Close();
+
+        }
+
+        //fazer upload do arquivo
+        public async Task<IActionResult> EnviarArquivo(List<IFormFile> arquivos)
+        {
+            long tamanhoArquivos = arquivos.Sum(f => f.Length);
+            
+            var caminhoArquivo = Path.GetTempFileName();
+            var mensagem = "";
+            foreach (var arquivo in arquivos)
+            {
+                if (arquivo == null || arquivo.Length == 0)
+                {
+                    ViewData["Erro"] = "Error: Arquivo(s) não selecionado(s)";
+                    return View(ViewData);
+                }
+                string pasta = "Arquivos_Usuario";
+                string nomeArquivo = "Usuario_arquivo_" + DateTime.Now.Millisecond.ToString();
+                nomeArquivo += ".csv";
+                string caminho_WebRoot = _appEnvironment.WebRootPath;
+                string caminhoDestinoArquivo = caminho_WebRoot + "\\Arquivos\\" + pasta + "\\";
+                string caminhoDestinoArquivoOriginal = caminhoDestinoArquivo + "\\Recebidos\\" + nomeArquivo;
+                using (var stream = new FileStream(caminhoDestinoArquivoOriginal, FileMode.Create))
+                {
+                    await arquivo.CopyToAsync(stream);
+                }
+                mensagem = await ImportAsync(caminhoDestinoArquivoOriginal);
+            }
+            ViewData["Resultado"] = mensagem;
+
+
+            var context = _context.Produto.Include(p => p.Categoria);
+           
+
+            return View("../Produtos/Index", await context.ToListAsync());
         }
     }
 }

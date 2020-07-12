@@ -1,14 +1,21 @@
 ﻿@model IEnumerable<InnovationOne.Models.Produto>
 
-@{
-    ViewData["Title"] = "Index";
-}
+@{ ViewData["Title"] = "Index"; }
 
 <h1>Index</h1>
-
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+@if (ViewData["Erro"] != null)
+{
+<div class="alert alert-danger" role="alert">
+    @ViewData["Erro"]
+</div>}
+@if (ViewData["Resultado"] != null)
+{
+<div class="alert alert-success" role="alert">
+    @ViewData["Resultado"]
+</div>}
 <table class="table">
     <thead>
         <tr>
@@ -25,24 +32,39 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Descricao)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Quantidade)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Categoria.Descricao)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+<tr>
+    <td>
+        @Html.DisplayFor(modelItem => item.Descricao)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Quantidade)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Categoria.Descricao)
+    </td>
+    <td>
+        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+    </td>
+</tr>}
     </tbody>
 </table>
+<div class="text-center">
+    <form enctype="multipart/form-data" action="/Produtos/EnviarArquivo" method="post">
+        <dl>
+            <dt>
+                <label>Importar produtos (*.csv)</label>
+            </dt>
+            <dd>
+                <input name="arquivos" type="file">
+
+            </dd>
+        </dl>
+        <input class="btn" type="submit" value="Enviar" />
+    </form>
+
+</div>
 
